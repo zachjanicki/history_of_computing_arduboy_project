@@ -1,4 +1,4 @@
-nclude <Arduboy2.h>
+#include <Arduboy2.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -234,7 +234,7 @@ void loop(){
         playerx[1] = playerx[1]+1;
         playerx[2] = playerx[2]+1;
       }
-      if(arduboy.pressed(B_BUTTON)){
+      if(arduboy.pressed(B_BUTTON) and (playerx[0] > 10) and (playerx[0] < 117) and (playery[0] > 10) and (playery[0] < 53)){
         buttonB_pressed = 1;
         rotate_main_character();
       }
@@ -250,9 +250,9 @@ void loop(){
       arduboy.setCursor(0,20);
       arduboy.print("Press A to restart");
       if(arduboy.pressed(A_BUTTON) and buttonA_pressed == 0){
-          setup();
           buttonA_pressed = 1;
           game_state = 0;
+          setup();
       }
       break;
      case 3:
@@ -261,9 +261,9 @@ void loop(){
       arduboy.setCursor(0,20);
       arduboy.print("Press A to restart");
       if(arduboy.pressed(A_BUTTON) and buttonA_pressed == 0){
-          setup();
           buttonA_pressed = 1;
           game_state = 0;
+          setup();
       }
       break;
   }
