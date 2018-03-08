@@ -7,16 +7,16 @@ Arduboy2 arduboy;
 int game_state = 0;
 int buttonA_pressed = 0;
 int buttonB_pressed = 0;
-int playerx[3];
-int playery[3];
-int playerx_vel[3];
-int playery_vel[3];
-int asteroidsx[5];
-int asteroidsy[5];
-int asteroidsr[5];
+float playerx[3];
+float playery[3];
+float playerx_vel[3];
+float playery_vel[3];
+float asteroidsx[5];
+float asteroidsy[5];
+float asteroidsr[5];
 int asteroidsflag[5];
-int asteroidsdx[5];
-int asteroidsdy[5];
+float asteroidsdx[5];
+float asteroidsdy[5];
 int missile[10][3];
 int xvel[10] = {0};
 int yvel[10] = {0};
@@ -26,12 +26,12 @@ void setup(){
   arduboy.begin();
   srand(7/8);
   arduboy.setFrameRate(20);
-  playerx[0] = 1;
-  playerx[1] = 10;
-  playerx[2] = 5;
-  playery[0] = 1;
-  playery[1] = 1;
-  playery[2] = 9;
+  playerx[0] = 1.0;
+  playerx[1] = 8.66;
+  playerx[2] = 1.0;
+  playery[0] = 1.0;
+  playery[1] = 5.0;
+  playery[2] = 10;
   //set asteroids positions 
   for(int i = 0; i < 5; i++){
     asteroidsx[i] = rand() % 127+20;
@@ -59,9 +59,9 @@ void setup(){
 
 void rotate_main_character(){
   //this function turns the main character 90 degreees clockwise
-    int p,p2,p3,q,q2,q3,a1,a2,a3,b1,b2,b3;
+    float p,p2,p3,q,q2,q3,a1,a2,a3,b1,b2,b3;
     float angle;
-    angle = 45*(3.14/180);
+    angle = 90*(3.14/180);
     p = playerx[0];
     q = playery[0];
     a1 = p + (playerx[0] - p) * cos(angle) - (playery[0] - q) * sin(angle);
@@ -151,6 +151,10 @@ void missile_collision(){
             asteroidsflag[i] = 1;
           } else {
             asteroidsr[j]--;
+            if (asteroidsr[j] == 1){
+              asteroidsr[j] = 0;
+              asteroidsflag[i] = 1;
+            }
             missile[i][0] = 0;
             missile[i][1] = 0;
             missile[i][2] = 0;
@@ -159,6 +163,8 @@ void missile_collision(){
     }
   }
 }
+
+
 
 void loop(){
   // put your main code here, to run repeatedly:
@@ -177,12 +183,12 @@ void loop(){
           buttonA_pressed = 1;
           game_state = 1;
       }
-      playerx[0] = 1;
-      playerx[1] = 10;
-      playerx[2] = 5;
-      playery[0] = 1;
-      playery[1] = 1;
-      playery[2] = 9;
+      playerx[0] = 1.0;
+      playerx[1] = 8.66;
+      playerx[2] = 1.0;
+      playery[0] = 1.0;
+      playery[1] = 5.0;
+      playery[2] = 10;
       for (int i = 0; i < 3; i++) {
         playerx_vel[i] = 0;
         playery_vel[i] = 0;
@@ -191,7 +197,7 @@ void loop(){
     case 1:
       //Game Play
       arduboy.fillTriangle(playerx[0],playery[0], playerx[1], playery[1], playerx[2], playery[2], WHITE);
-      // move the player
+      // move the player every frame
       for (int i = 0; i < 3; i++) {
         playerx[i] += playerx_vel[i];
         playery[i] += playery_vel[i];
@@ -234,22 +240,24 @@ void loop(){
         if(asteroidsy[i]-asteroidsr[i] <= 0){
           asteroidsdy[i] = 1;
         }
+        
         //checking if any of the points of the sprite fall within the bounds of an asteroid
         for(int j = 0; j < 3; j++){
-          if(playerx[j] >= asteroidsx[i]-asteroidsr[i] and playerx[j] <= asteroidsx[i]+asteroidsr[i] and playery[j] <= asteroidsy[i]+asteroidsr[i] and playery[j] >= asteroidsy[i]+asteroidsr[i] and asteroidsflag[i] == 0){
+          if(playerx[j] > asteroidsx[i]-asteroidsr[i]+1 and playerx[j] < asteroidsx[i]+asteroidsr[i]-1 and playery[j] < asteroidsy[i]+asteroidsr[i]-1 and playery[j] > asteroidsy[i]-asteroidsr[i]+1 and asteroidsflag[i] == 0){
             game_state = 3;
           }
         }
-  
+        
        //now that bounds have been checked and directions have been set we can move the asteroids
         if(asteroidsdx[i] == -1){
-          asteroidsx[i] = asteroidsx[i] - 1;
-        }else{asteroidsx[i] = asteroidsx[i] + 1;}
+          asteroidsx[i] = asteroidsx[i] - .5;
+        }else{asteroidsx[i] = asteroidsx[i] + .5;}
         if(asteroidsdy[i] == -1){
-          asteroidsy[i] = asteroidsy[i] - 1;
-        }else{asteroidsy[i] = asteroidsy[i] + 1;}
+          asteroidsy[i] = asteroidsy[i] - .5;
+        }else{asteroidsy[i] = asteroidsy[i] + .5;}
 
       }
+      //player_collision();
       missile_motion();
       missile_collision();
       
@@ -260,7 +268,7 @@ void loop(){
 
       if(arduboy.pressed(UP_BUTTON) and playery[0] > 0 and playery[1] > 0 and playery[2] > 0){
         for (int i = 0; i < 3; i++) {
-          playery_vel[i]--;
+          playery_vel[i]-= .25;
         }
         /*
         playery[0] -= playery_vel[0];
@@ -273,7 +281,7 @@ void loop(){
       }
       if(arduboy.pressed(DOWN_BUTTON) and (playery[0] < 63) and (playery[1] < 63) and (playery[2] < 63)){
         for (int i = 0; i < 3; i++) {
-          playery_vel[i]++;
+          playery_vel[i]+=.25;
         }
         /*
         playery[0] += playery_vel[0];
@@ -286,7 +294,7 @@ void loop(){
       }
       if(arduboy.pressed(LEFT_BUTTON) and (playerx[0] > 0) and (playerx[1] > 0) and (playerx[2] > 0)){
         for (int i = 0; i < 3; i++) {
-          playerx_vel[i]--;
+          playerx_vel[i]-=.25;
         }
         /*
         playerx[0] -= playerx_vel[0];
@@ -299,7 +307,7 @@ void loop(){
       }
       if(arduboy.pressed(RIGHT_BUTTON) and (playerx[0] < 127) and (playerx[1] < 127) and (playerx[2] < 127)){
         for (int i = 0; i < 3; i++) {
-          playerx_vel[i]++;
+          playerx_vel[i]+=.25;
         }
         /*
         playerx[0] += playerx_vel[0];
